@@ -1,6 +1,7 @@
 from appwrite.client import Client
 from appwrite.services.databases import Databases
 from appwrite.exception import AppwriteException
+from appwrite.query import Query
 import os
 
 # This Appwrite function will be executed every time your function is triggered
@@ -21,9 +22,7 @@ def main(context):
         response = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],  # Your database ID
             collection_id=os.environ["APPOINTMENT_COLLECTION_ID"],  # Your collection ID
-            queries=[
-                "orderDesc($createdAt)"  # Sort documents by $createdAt in descending order
-            ],
+            queries = [Query.order_desc("$createdAt")],
             #test
         )
 
