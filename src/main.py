@@ -7,9 +7,9 @@ def main(context):
     # Initialize Appwrite client
     client = (
         Client()
-        .set_endpoint(os.environ["APPWRITE_FUNCTION_API_ENDPOINT"])  # API endpoint
-        .set_project(os.environ["APPWRITE_FUNCTION_PROJECT_ID"])      # Project ID
-        .set_key(context.req.headers["x-appwrite-key"])               # API key from request headers
+        .set_endpoint("https://cloud.appwrite.io/v1")  # API endpoint
+        .set_project("67317d0100250021489f")      # Project ID
+        .set_key('standard_ebc15b8b03726bfeb75ee3153cda1c16c0d353697508f691e3552a0e3c5e07d2d376c62e0b9c8ee742dec9f206eaa48f2916388d7fb907b32a69a0cad3f7571e52758602c60841549ed475cc557cbb9324404387d31f5d123e5c9ba1f126abab5cc14a8efbec8197afffba59636c2359f4618b48d396aac79134203d4563af6a')               # API key from request headers
     )
     
     # Initialize the Databases service
@@ -32,4 +32,5 @@ def main(context):
     except AppwriteException as err:
         # Handle errors
         context.error("Could not fetch documents: " + repr(err))
-        return context.res.json({"error": str(err)}, status_code=500)
+        return context.res.json({"error": str(err)}, 500)
+
