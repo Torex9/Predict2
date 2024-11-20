@@ -1,39 +1,35 @@
 from appwrite.client import Client
-from appwrite.services.users import Users
+from appwrite.services.databases import Databases
 from appwrite.exception import AppwriteException
 import os
 
-# This Appwrite function will be executed every time your function is triggered
 def main(context):
-    # You can use the Appwrite SDK to interact with other services
-    # For this example, we're using the Users service
+    # Initialize Appwrite client
     client = (
         Client()
-        .set_endpoint(os.environ["APPWRITE_FUNCTION_API_ENDPOINT"])
-        .set_project(os.environ["APPWRITE_FUNCTION_PROJECT_ID"])
-        .set_key(context.req.headers["x-appwrite-key"])
+        .set_endpoint(os.environ["APPWRITE_FUNCTION_API_ENDPOINT"])  # API endpoint
+        .set_project(os.environ["APPWRITE_FUNCTION_PROJECT_ID"])      # Project ID
+        .set_key(context.req.headers["x-appwrite-key"])               # API key from request headers
     )
-    users = Users(client)
-
+    
+    # Initialize the Databases service
+    databases = Databases(client)
+    
+    # Specify the database and collection IDs
+    database_id = "67317e6000069e6c10c9"  # Replace with your database ID
+    collection_id = "67317eca00290232aa78"  # Replace with your collection ID
+    
     try:
-        response = users.list()
-        # Log messages and errors to the Appwrite Console
-        # These logs won't be seen by your end users
-        context.log("Total users: " + str(response["total"]))
+        # Fetch all documents in the collection
+        response = databases.list_documents(database_id=database_id, collection_id=collection_id)
+        
+        # Log the total count of documents
+        context.log("Total documents: " + str(response["total"]))
+        
+        # Return the documents as a JSON response
+        return context.res.json(response["documents"])
+    
     except AppwriteException as err:
-        context.error("Could not list users: " + repr(err))
-
-    # The req object contains the request data
-    if context.req.path == "/ping":
-        # Use res object to respond with text(), json(), or binary()
-        # Don't forget to return a response!
-        return context.res.text("Pong")
-
-    return context.res.json(
-        {
-            "motto": "Build like a team of hundreds_",
-            "learn": "https://appwrite.io/docs",
-            "connect": "https://appwrite.io/discord",
-            "getInspired": "https://builtwith.appwrite.io",
-        }
-    )
+        # Handle errors
+        context.error("Could not fetch documents: " + repr(err))
+        return context.res.json({"error": str(err)}, status_code=500)
