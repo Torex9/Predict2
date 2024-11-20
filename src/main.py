@@ -16,12 +16,12 @@ def main(context):
     databases = Databases(client)
     
     # Specify the database and collection IDs
-    database_id = "67317e6000069e6c10c9"  # Replace with your database ID
-    collection_id = "67317eca00290232aa78"  # Replace with your collection ID
+    database_ID = "67317e6000069e6c10c9"  # Replace with your database ID
+    collection_ID = "67317eca00290232aa78"  # Replace with your collection ID
     
     try:
         # Fetch all documents in the collection
-        response = databases.list_documents(database_id=database_id, collection_id=collection_id)
+        response = databases.list_documents(database_id=database_ID, collection_id=collection_ID)
         
         # Log the total count of documents
         context.log("Total documents: " + str(response["total"]))
