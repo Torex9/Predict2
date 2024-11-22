@@ -33,7 +33,7 @@ def fetch_file_from_storage(context, storage, bucket_id, file_id, local_path):
 
 
 
-def preprocess_data(document):
+def preprocess_data(document, scaler):
     """
     Convert the Appwrite document to a format suitable for the ML model.
     """
@@ -49,7 +49,7 @@ def preprocess_data(document):
         int(document['smsRecieved']),
     ]
     # Scale features
-    return features
+    return scaler.transform([features])
 
 # This Appwrite function will be executed every time your function is triggered
 def main(context):
@@ -94,8 +94,8 @@ def main(context):
         
 
         # Load scaler and model
-        # scaler = joblib.load(scaler_path)
-        # model = joblib.load(model_path)
+        scaler = joblib.load(scaler_path)
+        model = joblib.load(model_path)
 
 
         # List documents, sorting by $createdAt in descending order
@@ -111,7 +111,7 @@ def main(context):
             # Return the most recent document
             latest_document = response["documents"][0]  # First document is the latest
 
-            features = preprocess_data(latest_document)
+            features = preprocess_data(latest_document, scaler)
 
             context.log(f"Latest document: {features}")
             return context.res.json(features)
