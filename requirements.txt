@@ -1,6 +1,5 @@
 appwrite
 joblib
 numpy
-scikit-learn
-build-essential
+
 
