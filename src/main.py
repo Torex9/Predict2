@@ -1,8 +1,35 @@
 from appwrite.client import Client
 from appwrite.services.databases import Databases
+from appwrite.services.storage import Storage
 from appwrite.exception import AppwriteException
 from appwrite.query import Query
 import os
+import joblib
+import numpy as np
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+
+
+def fetch_file_from_storage(storage, bucket_id, file_id, local_path):
+    """
+    Download a file from Appwrite Storage and save it locally.
+    """
+    try: 
+        # Try to download the file
+        response = storage.get_file_download(bucket_id=bucket_id, file_id=file_id)
+
+        # Save the file locally
+        with open(local_path, "wb") as f:
+            f.write(response)
+        # Log the file path
+        logging.info(f"File saved to: {local_path}")
+        return local_path
+    except Exception as e: 
+        logging.error(f"Error fetching file from storage: {e}")
+        return None
 
 
 
@@ -36,8 +63,41 @@ def main(context):
 
     # Initialize Databases service
     databases = Databases(client)
+    storage = Storage(client)
 
     try:
+
+        # File IDs for scaler and model
+        bucket_id = os.environ["NEXT_PUBLIC_PREDICTIONFILES"]
+        scaler_file_id = os.environ["SCALER_ID"]
+        model_file_id = os.environ["LOGISTIC_REGRESSION_MODEL_ID"]
+
+        # Temporary paths for scaler and model
+        scaler_path = "/tmp/scaler.pkl"
+        model_path = "/tmp/logistic_regression_model.pkl"
+
+        # Fetch scaler and model from Appwrite Storage
+        # fetch_file_from_storage(storage, bucket_id, scaler_file_id, scaler_path)
+        # fetch_file_from_storage(storage, bucket_id, model_file_id, model_path)
+
+        # Fetch the file from Appwrite Storage and log the result
+        result = fetch_file_from_storage(storage, bucket_id, scaler_file_id, scaler_path)
+    
+        # Log what is returned
+        if result:
+            logging.info(f"Scaler file fetched successfully, saved at {result}")
+        else:
+            logging.error("Failed to fetch scaler file.")
+    
+
+
+        
+
+        # Load scaler and model
+        # scaler = joblib.load(scaler_path)
+        # model = joblib.load(model_path)
+
+
         # List documents, sorting by $createdAt in descending order
         response = databases.list_documents(
             database_id=os.environ["DATABASE_ID"],  # Your database ID
@@ -52,6 +112,7 @@ def main(context):
             latest_document = response["documents"][0]  # First document is the latest
 
             features = preprocess_data(latest_document)
+
             context.log(f"Latest document: {features}")
             return context.res.json(features)
         else:
