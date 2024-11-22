@@ -13,7 +13,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 
-def fetch_file_from_storage(storage, bucket_id, file_id, local_path):
+def fetch_file_from_storage(context, storage, bucket_id, file_id, local_path):
     """
     Download a file from Appwrite Storage and save it locally.
     """
@@ -25,10 +25,10 @@ def fetch_file_from_storage(storage, bucket_id, file_id, local_path):
         with open(local_path, "wb") as f:
             f.write(response)
         # Log the file path
-        logging.info(f"File saved to: {local_path}")
+        context.log(f"File saved to: {local_path}")
         return local_path
     except Exception as e: 
-        logging.error(f"Error fetching file from storage: {e}")
+        context.error(f"Error fetching file from storage: {e}")
         return None
 
 
@@ -81,13 +81,13 @@ def main(context):
         # fetch_file_from_storage(storage, bucket_id, model_file_id, model_path)
 
         # Fetch the file from Appwrite Storage and log the result
-        result = fetch_file_from_storage(storage, bucket_id, scaler_file_id, scaler_path)
+        result = fetch_file_from_storage(context, storage, bucket_id, scaler_file_id, scaler_path)
     
         # Log what is returned
         if result:
-            logging.info(f"Scaler file fetched successfully, saved at {result}")
+            context.log(f"Scaler file fetched successfully, saved at {result}")
         else:
-            logging.error("Failed to fetch scaler file.")
+            context.error("Failed to fetch scaler file.")
     
 
 
