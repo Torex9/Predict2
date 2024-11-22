@@ -77,17 +77,17 @@ def main(context):
         model_path = "/tmp/logistic_regression_model.pkl"
 
         # Fetch scaler and model from Appwrite Storage
-        # fetch_file_from_storage(storage, bucket_id, scaler_file_id, scaler_path)
-        # fetch_file_from_storage(storage, bucket_id, model_file_id, model_path)
+        fetch_file_from_storage(context, storage, bucket_id, scaler_file_id, scaler_path)
+        fetch_file_from_storage(context, storage, bucket_id, model_file_id, model_path)
 
-        # Fetch the file from Appwrite Storage and log the result
-        result = fetch_file_from_storage(context, storage, bucket_id, scaler_file_id, scaler_path)
+        # # Fetch the file from Appwrite Storage and log the result
+        # result = fetch_file_from_storage(context, storage, bucket_id, scaler_file_id, scaler_path)
     
-        # Log what is returned
-        if result:
-            context.log(f"Scaler file fetched successfully, saved at {result}")
-        else:
-            context.error("Failed to fetch scaler file.")
+        # # Log what is returned
+        # if result:
+        #     context.log(f"Scaler file fetched successfully, saved at {result}")
+        # else:
+        #     context.error("Failed to fetch scaler file.")
     
 
 
