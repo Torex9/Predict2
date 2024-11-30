@@ -169,9 +169,9 @@ def preprocess_data(context, document, scaler):
             int(document['alcoholism']),
             int(document['handicap']),
             int(document['smsRecieved']),
-            document['gender'] == 'M',  # Male: 1, Female: 0
+            1 if document['gender'] == 'M' else 0,  # Male: 1, Female: 0
             ]
-    context.log(f"gender: {document['gender'] == 'M'}")
+    context.log(f"gender: {1 if document['gender'] == 'M' else 0}")
     
     # Extract features and transform to match model input
     try:
