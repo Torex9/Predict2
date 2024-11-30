@@ -38,6 +38,39 @@ def preprocess_data(document, scaler):
     """
     Convert the Appwrite document to a format suitable for the ML model.
     """
+
+    valid_neighbourhoods = ['AEROPORTO',
+       'ANDORINHAS', 'ANTÔNIO HONÓRIO', 'ARIOVALDO FAVALESSA',
+       'BARRO VERMELHO', 'BELA VISTA', 'BENTO FERREIRA', 'BOA VISTA', 'BONFIM',
+       'CARATOÍRA', 'CENTRO', 'COMDUSA', 'CONQUISTA', 'CONSOLAÇÃO',
+       'CRUZAMENTO', 'DA PENHA', 'DE LOURDES', 'DO CABRAL', 'DO MOSCOSO',
+       'DO QUADRO', 'ENSEADA DO SUÁ', 'ESTRELINHA', 'FONTE GRANDE',
+       'FORTE SÃO JOÃO', 'FRADINHOS', 'GOIABEIRAS', 'GRANDE VITÓRIA',
+       'GURIGICA', 'HORTO', 'ILHA DAS CAIEIRAS', 'ILHA DE SANTA MARIA',
+       'ILHA DO BOI', 'ILHA DO FRADE', 'ILHA DO PRÍNCIPE',
+       'ILHAS OCEÂNICAS DE TRINDADE', 'INHANGUETÁ', 'ITARARÉ', 'JABOUR',
+       'JARDIM CAMBURI', 'JARDIM DA PENHA', 'JESUS DE NAZARETH', 'JOANA D´ARC',
+       'JUCUTUQUARA', 'MARIA ORTIZ', 'MARUÍPE', 'MATA DA PRAIA', 'MONTE BELO',
+       'MORADA DE CAMBURI', 'MÁRIO CYPRESTE', 'NAZARETH', 'NOVA PALESTINA',
+       'PARQUE INDUSTRIAL', 'PARQUE MOSCOSO', 'PIEDADE', 'PONTAL DE CAMBURI',
+       'PRAIA DO CANTO', 'PRAIA DO SUÁ', 'REDENÇÃO', 'REPÚBLICA',
+       'RESISTÊNCIA', 'ROMÃO', 'SANTA CECÍLIA', 'SANTA CLARA', 'SANTA HELENA',
+       'SANTA LUÍZA', 'SANTA LÚCIA', 'SANTA MARTHA', 'SANTA TEREZA',
+       'SANTO ANDRÉ', 'SANTO ANTÔNIO', 'SANTOS DUMONT', 'SANTOS REIS',
+       'SEGURANÇA DO LAR', 'SOLON BORGES', 'SÃO BENEDITO', 'SÃO CRISTÓVÃO',
+       'SÃO JOSÉ', 'SÃO PEDRO', 'TABUAZEIRO', 'UNIVERSITÁRIO', 'VILA RUBIM']
+    
+
+    features = [
+            document['gender'] == 'M',  # Male: 1, Female: 0
+            int(document['age']),
+            int(document['hypertension']),
+            int(document['scholarship']),
+            int(document['diabetes']),
+            int(document['alcoholism']),
+            int(document['handicap']),
+            int(document['smsRecieved']),]
+    
     # Extract features and transform to match model input
     try:
         # Parse the 'schedule' field to extract datetime components
@@ -46,48 +79,38 @@ def preprocess_data(document, scaler):
         # Parse the '$createdAt' field represended with appointment_datetime to extract datetime components
         appointment_datetime = datetime.fromisoformat(document['$createdAt'].replace('Z', ''))
 
-        features = [
-            document['gender'] == 'M',  # Male: 1, Female: 0
-            int(document['age']),
-            int(document['hypertension']),
-            int(document['scholarship']),
-            int(document['diabetes']),
-            int(document['alcoholism']),
-            int(document['handicap']),
-            int(document['smsRecieved']),
-            schedule_datetime.month,        # ScheduledMonth (1-12)
-            schedule_datetime.weekday(),    # ScheduledDayOfWeek (0=Monday, 6=Sunday)
-            schedule_datetime.hour,         # ScheduledHour (0-23)
+        features.extend([
+            schedule_datetime.month,          # ScheduledMonth (1-12)
+            schedule_datetime.weekday(),      # ScheduledDayOfWeek (0=Monday, 6=Sunday)
+            schedule_datetime.hour,           # ScheduledHour (0-23)
             appointment_datetime.month,       # CreatedAtMonth (1-12)
             appointment_datetime.weekday(),   # CreatedAtDayOfWeek (0=Monday, 6=Sunday)
             appointment_datetime.hour         # CreatedAtHour (0-23)
+        ])
+
+        # Iterate over the list of valid neighbourhoods and add a corresponding feature for each one
+        for neighbourhood in valid_neighbourhoods:
+            features.append(document['neighbourhood'] == neighbourhood)    
             
-        ]
+        
     except Exception as e:
         # Log and handle if parsing fails
         print(f"Error parsing schedule field: {e}")
-        # Include default values in case of parsing error
-        features = [
-            document['gender'] == 'M',
-            int(document['age']),
-            int(document['hypertension']),
-            int(document['scholarship']),
-            int(document['diabetes']),
-            int(document['alcoholism']),
-            int(document['handicap']),
-            int(document['smsRecieved']),
-            0,  # Default ScheduledMonth
-            0,  # Default ScheduledDayOfWeek
-            0,  # Default ScheduledHour
-            0,  # Default AppointmentMonth
-            0,  # Default AppointmentDayOfWeek
-            0   # Default AppointmentHour
+    
+        # Add default values if parsing fails
+        features.extend([0, 0, 0, 0, 0, 0, ])
 
-        ]
+        # Add False for each valid neighbourhood if date parsing fails
+        features.extend([False] * len(valid_neighbourhoods))  # False for each neighbourhood
+    
         
     # Scale features
     #return scaler.transform([features])
     return features
+
+
+
+
 
 # This Appwrite function will be executed every time your function is triggered
 def main(context):
