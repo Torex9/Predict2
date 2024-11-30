@@ -43,6 +43,8 @@ def create_meeting(context, topic, duration, start_date, start_time):
         
         if response.status_code!=200:
             context.log("Unable to get access token")
+            return None  # Return None in case of failure
+        
         response_data = response.json()
         access_token = response_data["access_token"]
 
@@ -63,9 +65,11 @@ def create_meeting(context, topic, duration, start_date, start_time):
         
         if resp.status_code!=201:
             context.log("Unable to generate meeting link")
+            return None  # Return None in case of failure
+        
         response_data = resp.json()
         
-        content = {
+        meeting_details = {
                     "meeting_url": response_data["join_url"], 
                     "password": response_data["password"],
                     "meetingTime": response_data["start_time"],
@@ -74,7 +78,8 @@ def create_meeting(context, topic, duration, start_date, start_time):
                     "message": "Success",
                     "status":1
         }
-        context.log(content)
+        context.log(meeting_details)
+        return meeting_details
 
 
 
@@ -292,9 +297,9 @@ def main(context):
             )
 
             
-            create_meeting(
+            meeting_details = create_meeting(
                 context,
-                "Test Zoom Meeting",
+                "Carepulse Zoom Meeting",
                 "60",
                 "2024-12-23",
                 "18:24",
@@ -308,6 +313,18 @@ def main(context):
                 f"scheduled for {datetime.fromisoformat(latest_document['schedule'].replace('Z', '')).strftime('%Y-%m-%d %H:%M:%S')}, "
                 f"has been updated to '{updated_status}' based on the prediction."
             )
+
+            # Check if meeting details exist and status is 'scheduled'
+            if updated_status == 'scheduled' and meeting_details:
+                body += (
+                    f"\n\nA Zoom meeting has been scheduled for this appointment. You can join the meeting using the following details:\n"
+                    f"Meeting Link: {meeting_details['meeting_url']}\n"
+                    f"Password: {meeting_details['password']}\n"
+                    f"Meeting Time: {meeting_details['meetingTime']}\n"
+                    f"Purpose: {meeting_details['purpose']}\n"
+                    f"Duration: {meeting_details['duration']} minutes"
+                )
+
             recipient_email = os.environ["EMAIL"]
 
             # Send the email to the recipient
