@@ -7,6 +7,7 @@ import os
 import joblib
 import numpy as np
 import logging
+from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -38,18 +39,44 @@ def preprocess_data(document, scaler):
     Convert the Appwrite document to a format suitable for the ML model.
     """
     # Extract features and transform to match model input
-    features = [
-        int(document['gender'] == 'M'),  # Male: 1, Female: 0
-        int(document['age']),
-        int(document['hypertension']),
-        int(document['scholarship']),
-        int(document['diabetes']),
-        int(document['alcoholism']),
-        int(document['handicap']),
-        int(document['smsRecieved']),
-    ]
+    try:
+        # Parse the 'schedule' field to extract datetime components
+        schedule_datetime = datetime.fromisoformat(document['schedule'].replace('Z', ''))
+
+        features = [
+            int(document['gender'] == 'M'),  # Male: 1, Female: 0
+            int(document['age']),
+            int(document['hypertension']),
+            int(document['scholarship']),
+            int(document['diabetes']),
+            int(document['alcoholism']),
+            int(document['handicap']),
+            int(document['smsRecieved']),
+            schedule_datetime.month,        # ScheduledMonth (1-12)
+            schedule_datetime.weekday(),    # ScheduledDayOfWeek (0=Monday, 6=Sunday)
+            schedule_datetime.hour          # ScheduledHour (0-23)
+        ]
+    except Exception as e:
+        # Log and handle if parsing fails
+        print(f"Error parsing schedule field: {e}")
+        # Include default values in case of parsing error
+        features = [
+            int(document['gender'] == 'M'),
+            int(document['age']),
+            int(document['hypertension']),
+            int(document['scholarship']),
+            int(document['diabetes']),
+            int(document['alcoholism']),
+            int(document['handicap']),
+            int(document['smsRecieved']),
+            0,  # Default ScheduledMonth
+            0,  # Default ScheduledDayOfWeek
+            0   # Default ScheduledHour
+        ]
+        
     # Scale features
-    return scaler.transform([features])
+    #return scaler.transform([features])
+    return features
 
 # This Appwrite function will be executed every time your function is triggered
 def main(context):
