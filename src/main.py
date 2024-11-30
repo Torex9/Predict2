@@ -227,7 +227,11 @@ def main(context):
 
             # Send the email after the update
             subject = f"Appointment Status Updated: {updated_status}"
-            body = f"The status of the appointment (ID: {latest_document['$id']}) has been updated to '{updated_status}' based on the prediction."
+            body = (
+                f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
+                f"scheduled for {datetime.fromisoformat(latest_document['schedule'].replace('Z', '')).strftime('%Y-%m-%d %H:%M:%S')}, "
+                f"has been updated to '{updated_status}' based on the prediction."
+            )
             recipient_email = os.environ["EMAIL"]
 
             # Send the email to the recipient
