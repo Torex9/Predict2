@@ -134,7 +134,7 @@ def fetch_file_from_storage(context, storage, bucket_id, file_id, local_path):
 
 
 
-def preprocess_data(context, document, scaler):
+def preprocess_data(document, scaler):
     """
     Convert the Appwrite document to a format suitable for the ML model.
     """
@@ -192,7 +192,7 @@ def preprocess_data(context, document, scaler):
         # Iterate over the list of valid neighbourhoods and add a corresponding feature for each one
         for neighbourhood in valid_neighbourhoods:
             features.append(1 if document['neighbourhood'] == neighbourhood else 0) 
-            context.log(f"features: {features}")   
+              
             
         
     except Exception as e:
