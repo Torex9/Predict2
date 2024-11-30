@@ -105,8 +105,8 @@ def preprocess_data(document, scaler):
     
         
     # Scale features
-    #return scaler.transform([features])
-    return features
+    return scaler.transform([features])
+    #return features
 
 
 
