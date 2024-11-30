@@ -179,16 +179,26 @@ def main(context):
 
 
             # Predict no-show
-            prediction = model.predict(features)[0]  # True: Will show up, 1: No-show
+            prediction = model.predict(features)[0]  # True: Will show up, False: No-show
 
 
             # Update the document based on the prediction
             updated_status = "cancelled" if not prediction else "scheduled"
-            #update_payload = {"status": updated_status}
+            update_payload = {"status": updated_status}
 
-            context.log(f"Latest Status After prediction: {updated_status}")
             context.log(f"Latest prediction: {prediction}")
-            return context.res.json(updated_status)
+            context.log(f"Latest Status After prediction: {updated_status}")
+
+
+            # Update the document in the collection
+            databases.update_document(
+            database_id=os.environ["DATABASE_ID"],
+            collection_id=os.environ["APPOINTMENT_COLLECTION_ID"],
+            document_id=latest_document["$id"],
+            data=update_payload,
+        )
+            
+            return context.res.json({"status": "success", "updated_status": updated_status})
         else:
             # No documents found
             error_response = {"error": "No documents found in the collection"}
@@ -197,5 +207,5 @@ def main(context):
 
     except AppwriteException as err:
         # Log and return any error that occurs
-        context.error(f"Error fetching the latest document: {repr(err)}")
-        return context.res.json({"error": "Could not fetch the latest document", "message": str(err)})
+        context.error(f"Error: {repr(err)}")
+        return context.res.json({"error": "An error occurred", "message": str(err)})
