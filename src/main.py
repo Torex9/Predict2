@@ -174,10 +174,19 @@ def main(context):
             latest_document = response["documents"][0]  # First document is the latest
             context.log(f"Latest document full data: {latest_document}")
 
+            # Preprocess data for prediction
             features = preprocess_data(latest_document, scaler)
 
-            context.log(f"Latest document features needed: {features}")
-            return context.res.json(features)
+
+            # Predict no-show
+            prediction = model.predict(features)[0]  # 0: Will show up, 1: No-show
+
+            # Update the document based on the prediction
+            updated_status = "cancelled" if prediction == 1 else "scheduled"
+            #update_payload = {"status": updated_status}
+
+            context.log(f"Latest prediction: {updated_status}")
+            return context.res.json(updated_status)
         else:
             # No documents found
             error_response = {"error": "No documents found in the collection"}
