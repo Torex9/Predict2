@@ -137,10 +137,11 @@ def main(context):
         if response["documents"]:
             # Return the most recent document
             latest_document = response["documents"][0]  # First document is the latest
+            context.log(f"Latest document full data: {latest_document}")
 
             features = preprocess_data(latest_document, scaler)
 
-            context.log(f"Latest document: {features}")
+            context.log(f"Latest document features needed: {features}")
             return context.res.json(features)
         else:
             # No documents found
