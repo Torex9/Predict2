@@ -43,6 +43,9 @@ def preprocess_data(document, scaler):
         # Parse the 'schedule' field to extract datetime components
         schedule_datetime = datetime.fromisoformat(document['schedule'].replace('Z', ''))
 
+        # Parse the '$createdAt' field represended with appointment_datetime to extract datetime components
+        appointment_datetime = datetime.fromisoformat(document['$createdAt'].replace('Z', ''))
+
         features = [
             int(document['gender'] == 'M'),  # Male: 1, Female: 0
             int(document['age']),
@@ -54,7 +57,11 @@ def preprocess_data(document, scaler):
             int(document['smsRecieved']),
             schedule_datetime.month,        # ScheduledMonth (1-12)
             schedule_datetime.weekday(),    # ScheduledDayOfWeek (0=Monday, 6=Sunday)
-            schedule_datetime.hour          # ScheduledHour (0-23)
+            schedule_datetime.hour,         # ScheduledHour (0-23)
+            appointment_datetime.month,       # CreatedAtMonth (1-12)
+            appointment_datetime.weekday(),   # CreatedAtDayOfWeek (0=Monday, 6=Sunday)
+            appointment_datetime.hour         # CreatedAtHour (0-23)
+            
         ]
     except Exception as e:
         # Log and handle if parsing fails
@@ -71,7 +78,11 @@ def preprocess_data(document, scaler):
             int(document['smsRecieved']),
             0,  # Default ScheduledMonth
             0,  # Default ScheduledDayOfWeek
-            0   # Default ScheduledHour
+            0,  # Default ScheduledHour
+            0,  # Default AppointmentMonth
+            0,  # Default AppointmentDayOfWeek
+            0   # Default AppointmentHour
+
         ]
         
     # Scale features
