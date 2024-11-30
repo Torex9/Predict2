@@ -62,14 +62,15 @@ def preprocess_data(document, scaler):
     
 
     features = [
-            document['gender'] == 'M',  # Male: 1, Female: 0
             int(document['age']),
-            int(document['hypertension']),
             int(document['scholarship']),
+            int(document['hypertension']),
             int(document['diabetes']),
             int(document['alcoholism']),
             int(document['handicap']),
-            int(document['smsRecieved']),]
+            int(document['smsRecieved']),
+            document['gender'] == 'M',  # Male: 1, Female: 0
+            ]
     
     # Extract features and transform to match model input
     try:
