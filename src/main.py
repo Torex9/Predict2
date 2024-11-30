@@ -153,8 +153,6 @@ def main(context):
     
 
 
-        
-
         # Load scaler and model
         scaler = joblib.load(scaler_path)
         model = joblib.load(model_path)
