@@ -10,7 +10,6 @@ import smtplib
 import requests
 import logging
 from datetime import datetime
-import base64
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -21,19 +20,14 @@ def get_access_token(client_id, client_secret):
     payload = {
         "grant_type": "client_credentials"
     }
-    auth_str = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode('utf-8')
     headers = {
-        "Authorization": f"Basic {auth_str}"
+        "Authorization": f"Basic {requests.auth._basic_auth_str(client_id, client_secret)}"
     }
     response = requests.post(url, params=payload, headers=headers)
     if response.status_code == 200:
-        access_token = response.json().get("access_token")
-        logging.debug(f"Access token received: {access_token}")  # Log the access token using context.log
-        return access_token
+        return response.json().get("access_token")
     else:
-        logging.debug(f"Error response from Zoom API: {response.text}")  # Log the full error response
         raise Exception(f"Error: {response.status_code}, {response.text}")
-
 
 #Function to create zoom meeting
 def create_zoom_meeting(access_token, topic, start_time, duration):
@@ -55,9 +49,7 @@ def create_zoom_meeting(access_token, topic, start_time, duration):
     }
     response = requests.post(url, json=meeting_details, headers=headers)
     if response.status_code == 201:
-        meeting = response.json()
-        logging.debug(f"Zoom meeting created: {meeting}")  # Log the meeting details
-        return meeting
+        return response.json()
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
     
