@@ -179,14 +179,14 @@ def main(context):
 
 
             # Predict no-show
-            prediction = model.predict(features)[0]  # 0: Will show up, 1: No-show
+            prediction = model.predict(features)[0]  # True: Will show up, 1: No-show
 
 
             # Update the document based on the prediction
-            updated_status = "cancelled" if prediction == 1 else "scheduled"
+            updated_status = "cancelled" if not prediction else "scheduled"
             #update_payload = {"status": updated_status}
 
-            #context.log(f"Latest prediction: {updated_status}")
+            context.log(f"Latest Status After prediction: {updated_status}")
             context.log(f"Latest prediction: {prediction}")
             return context.res.json(updated_status)
         else:
