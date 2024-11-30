@@ -274,7 +274,7 @@ def main(context):
             context.log(f"Latest document full data: {latest_document}")
 
             # Preprocess data for prediction
-            features = preprocess_data(context, latest_document, scaler)
+            features = preprocess_data(latest_document, scaler)
 
 
             # Predict no-show
