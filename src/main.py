@@ -191,7 +191,8 @@ def preprocess_data(context, document, scaler):
 
         # Iterate over the list of valid neighbourhoods and add a corresponding feature for each one
         for neighbourhood in valid_neighbourhoods:
-            features.append(document['neighbourhood'] == neighbourhood)    
+            features.append(1 if document['neighbourhood'] == neighbourhood else 0) 
+            context.log(f"features: {features}")   
             
         
     except Exception as e:
@@ -202,7 +203,7 @@ def preprocess_data(context, document, scaler):
         features.extend([0, 0, 0, 0, 0, 0, ])
 
         # Add False for each valid neighbourhood if date parsing fails
-        features.extend([False] * len(valid_neighbourhoods))  # False for each neighbourhood
+        features.extend([0] * len(valid_neighbourhoods))  # False for each neighbourhood
     
         
     # Scale features
