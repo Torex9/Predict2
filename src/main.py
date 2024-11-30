@@ -7,12 +7,56 @@ import os
 import joblib
 import numpy as np
 import smtplib
+import requests
 import logging
 from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
 
+#function to get zoom access token 
+def get_access_token(client_id, client_secret):
+    url = "https://zoom.us/oauth/token"
+    payload = {
+        "grant_type": "client_credentials"
+    }
+    headers = {
+        "Authorization": f"Basic {requests.auth._basic_auth_str(client_id, client_secret)}"
+    }
+    response = requests.post(url, params=payload, headers=headers)
+    if response.status_code == 200:
+        return response.json().get("access_token")
+    else:
+        raise Exception(f"Error: {response.status_code}, {response.text}")
+
+#Function to create zoom meeting
+def create_zoom_meeting(access_token, topic, start_time, duration):
+    url = "https://api.zoom.us/v2/users/me/meetings"
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Content-Type": "application/json"
+    }
+    meeting_details = {
+        "topic": topic,
+        "type": 2,  # Scheduled meeting
+        "start_time": start_time,  # Format: "2024-12-01T15:00:00Z"
+        "duration": duration,  # In minutes
+        "timezone": "UTC",
+        "settings": {
+            "join_before_host": True,
+            "waiting_room": False
+        }
+    }
+    response = requests.post(url, json=meeting_details, headers=headers)
+    if response.status_code == 201:
+        return response.json()
+    else:
+        raise Exception(f"Error: {response.status_code}, {response.text}")
+    
+
+
+
+#Function to send email
 def send_email(subject, body, to_email):
     """
     Sends an email after document update based on the prediction.
@@ -224,6 +268,29 @@ def main(context):
             document_id=latest_document["$id"],
             data=update_payload,
             )
+
+            
+            CLIENT_ID = os.environ["CLIENT_ID"]
+            CLIENT_SECRET = os.environ["CLIENT_SECRET"]
+    
+            try:
+                # Step 1: Get Access Token
+                access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
+                context.log("Access Token:", access_token)
+                
+                # Step 2: Create a Zoom Meeting
+                TOPIC = "My Test Meeting"
+                START_TIME = "2024-12-30T15:00:00Z"  # ISO 8601 format
+                DURATION = 30  # Minutes
+                meeting = create_zoom_meeting(access_token, TOPIC, START_TIME, DURATION)
+                
+                context.log("Meeting Created!")
+                context.log("Join URL:", meeting["join_url"])
+                context.log("Start URL:", meeting["start_url"])
+            
+            except Exception as e:
+                context.log(str(e))
+
 
             # Send the email after the update
             subject = f"Appointment Status Updated: {updated_status}"

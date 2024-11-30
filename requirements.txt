@@ -2,4 +2,4 @@ appwrite
 joblib
 numpy
 scikit-learn
-
+requests
