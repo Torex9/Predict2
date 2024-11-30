@@ -10,57 +10,71 @@ import smtplib
 import requests
 import logging
 from datetime import datetime
-import base64
 
 logging.basicConfig(level=logging.DEBUG)
 
 
-#function to get zoom access token 
-def get_access_token(client_id, client_secret):
-    url = "https://zoom.us/oauth/token"
-    payload = {
-        "grant_type": "client_credentials"
-    }
-    auth_str = base64.b64encode(f"{client_id}:{client_secret}".encode()).decode('utf-8')
-    headers = {
-        "Authorization": f"Basic {auth_str}"
-    }
-    response = requests.post(url, params=payload, headers=headers)
-    if response.status_code == 200:
-        access_token = response.json().get("access_token")
-        logging.debug(f"Access token received: {access_token}")  # Log the access token using context.log
-        return access_token
-    else:
-        logging.debug(f"Error response from Zoom API: {response.text}")  # Log the full error response
-        raise Exception(f"Error: {response.status_code}, {response.text}")
+# CLIENT_ID = os.environ["CLIENT_ID"]
+# CLIENT_SECRET = os.environ["CLIENT_SECRET"]
 
+# replace with your client ID
+client_id = os.environ["CLIENT_ID"]
 
-#Function to create zoom meeting
-def create_zoom_meeting(access_token, topic, start_time, duration):
-    url = "https://api.zoom.us/v2/users/me/meetings"
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-    meeting_details = {
-        "topic": topic,
-        "type": 2,  # Scheduled meeting
-        "start_time": start_time,  # Format: "2024-12-01T15:00:00Z"
-        "duration": duration,  # In minutes
-        "timezone": "UTC",
-        "settings": {
-            "join_before_host": True,
-            "waiting_room": False
-        }
-    }
-    response = requests.post(url, json=meeting_details, headers=headers)
-    if response.status_code == 201:
-        meeting = response.json()
-        logging.debug(f"Zoom meeting created: {meeting}")  # Log the meeting details
-        return meeting
-    else:
-        raise Exception(f"Error: {response.status_code}, {response.text}")
+# replace with your account ID
+account_id = os.environ["ACCOUNT_ID"]
+
+# replace with your client secret
+client_secret = os.environ["CLIENT_SECRET"]
+
+auth_token_url = "https://zoom.us/oauth/token"
+api_base_url = "https://api.zoom.us/v2"
     
+
+# create the Zoom link function
+def create_meeting(context, topic, duration, start_date, start_time):
+        data = {
+        "grant_type": "account_credentials",
+        "account_id": account_id,
+        "client_secret": client_secret
+        }
+        response = requests.post(auth_token_url, 
+                                 auth=(client_id, client_secret), 
+                                 data=data)
+        
+        if response.status_code!=200:
+            context.log("Unable to get access token")
+        response_data = response.json()
+        access_token = response_data["access_token"]
+
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+        payload = {
+            "topic": topic,
+            "duration": duration,
+            'start_time': f'{start_date}T10:{start_time}',
+            "type": 2
+        }
+
+        resp = requests.post(f"{api_base_url}/users/me/meetings", 
+                             headers=headers, 
+                             json=payload)
+        
+        if resp.status_code!=201:
+            context.log("Unable to generate meeting link")
+        response_data = resp.json()
+        
+        content = {
+                    "meeting_url": response_data["join_url"], 
+                    "password": response_data["password"],
+                    "meetingTime": response_data["start_time"],
+                    "purpose": response_data["topic"],
+                    "duration": response_data["duration"],
+                    "message": "Success",
+                    "status":1
+        }
+        context.log(content)
 
 
 
@@ -278,26 +292,13 @@ def main(context):
             )
 
             
-            CLIENT_ID = os.environ["CLIENT_ID"]
-            CLIENT_SECRET = os.environ["CLIENT_SECRET"]
-    
-            try:
-                # Step 1: Get Access Token
-                access_token = get_access_token(CLIENT_ID, CLIENT_SECRET)
-                context.log("Access Token:", access_token)
-                
-                # Step 2: Create a Zoom Meeting
-                TOPIC = "My Test Meeting"
-                START_TIME = "2024-12-30T15:00:00Z"  # ISO 8601 format
-                DURATION = 30  # Minutes
-                meeting = create_zoom_meeting(access_token, TOPIC, START_TIME, DURATION)
-                
-                context.log("Meeting Created!")
-                context.log("Join URL:", meeting["join_url"])
-                context.log("Start URL:", meeting["start_url"])
-            
-            except Exception as e:
-                context.log(str(e))
+            create_meeting(
+                context,
+                "Test Zoom Meeting",
+                "60",
+                "2024-12-23",
+                "18:24",
+            )
 
 
             # Send the email after the update
