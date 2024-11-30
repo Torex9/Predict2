@@ -6,11 +6,40 @@ from appwrite.query import Query
 import os
 import joblib
 import numpy as np
+import smtplib
 import logging
 from datetime import datetime
 
 logging.basicConfig(level=logging.DEBUG)
 
+
+def send_email(subject, body, to_email):
+    """
+    Sends an email after document update based on the prediction.
+    """
+    try:
+        # Email configuration
+        email = os.environ["EMAIL"]
+        authKey = os.environ["EMAIL_AUTH_KEY"]
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+
+        # Create an SMTP object
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(email, authKey)
+
+        # Create the message
+        message = f"Subject: {subject}\n\n{body}"
+
+        # Send the email
+        server.sendmail(email, to_email, message)
+        server.quit()
+
+        return True
+    except Exception as e:
+        logging.error(f"Error sending email: {e}")
+        return False
 
 
 
@@ -194,7 +223,15 @@ def main(context):
             collection_id=os.environ["APPOINTMENT_COLLECTION_ID"],
             document_id=latest_document["$id"],
             data=update_payload,
-        )
+            )
+
+            # Send the email after the update
+            subject = f"Appointment Status Updated: {updated_status}"
+            body = f"The status of the appointment (ID: {latest_document['$id']}) has been updated to '{updated_status}' based on the prediction."
+            recipient_email = os.environ["EMAIL"]
+
+            # Send the email to the recipient
+            send_email(subject, body, recipient_email)
             
             return context.res.json({"status": "success", "updated_status": updated_status})
         else:
