@@ -47,7 +47,7 @@ def preprocess_data(document, scaler):
         appointment_datetime = datetime.fromisoformat(document['$createdAt'].replace('Z', ''))
 
         features = [
-            int(document['gender'] == 'M'),  # Male: 1, Female: 0
+            document['gender'] == 'M',  # Male: 1, Female: 0
             int(document['age']),
             int(document['hypertension']),
             int(document['scholarship']),
@@ -68,7 +68,7 @@ def preprocess_data(document, scaler):
         print(f"Error parsing schedule field: {e}")
         # Include default values in case of parsing error
         features = [
-            int(document['gender'] == 'M'),
+            document['gender'] == 'M',
             int(document['age']),
             int(document['hypertension']),
             int(document['scholarship']),
