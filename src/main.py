@@ -171,7 +171,6 @@ def preprocess_data(context, document, scaler):
             int(document['smsRecieved']),
             1 if document['gender'] == 'M' else 0,  # Male: 1, Female: 0
             ]
-    context.log(f"gender: {1 if document['gender'] == 'M' else 0}")
     
     # Extract features and transform to match model input
     try:
