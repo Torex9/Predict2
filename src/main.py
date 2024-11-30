@@ -25,7 +25,9 @@ def get_access_token(client_id, client_secret):
     }
     response = requests.post(url, params=payload, headers=headers)
     if response.status_code == 200:
-        return response.json().get("access_token")
+        access_token = response.json().get("access_token")
+        logging.debug(f"Access token received: {access_token}")  # Log the access token
+        return access_token
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
 
@@ -49,7 +51,9 @@ def create_zoom_meeting(access_token, topic, start_time, duration):
     }
     response = requests.post(url, json=meeting_details, headers=headers)
     if response.status_code == 201:
-        return response.json()
+        meeting = response.json()
+        logging.debug(f"Zoom meeting created: {meeting}")  # Log the meeting details
+        return meeting
     else:
         raise Exception(f"Error: {response.status_code}, {response.text}")
     
