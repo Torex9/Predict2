@@ -134,7 +134,7 @@ def fetch_file_from_storage(context, storage, bucket_id, file_id, local_path):
 
 
 
-def preprocess_data(document, scaler):
+def preprocess_data(context, document, scaler):
     """
     Convert the Appwrite document to a format suitable for the ML model.
     """
@@ -171,6 +171,7 @@ def preprocess_data(document, scaler):
             int(document['smsRecieved']),
             document['gender'] == 'M',  # Male: 1, Female: 0
             ]
+    context.log(f"gender: {document['gender'] == 'M'}")
     
     # Extract features and transform to match model input
     try:
@@ -273,15 +274,15 @@ def main(context):
             context.log(f"Latest document full data: {latest_document}")
 
             # Preprocess data for prediction
-            features = preprocess_data(latest_document, scaler)
+            features = preprocess_data(context, latest_document, scaler)
 
 
             # Predict no-show
-            prediction = model.predict(features)[0]  # True: Will show up, False: No-show
+            prediction = model.predict(features)[0]  # 0: Will show up, 1: No-show
 
 
             # Update the document based on the prediction
-            updated_status = "cancelled" if not prediction else "scheduled"
+            updated_status = "cancelled" if prediction == 1 else "scheduled"
             update_payload = {"status": updated_status}
 
             context.log(f"Latest prediction: {prediction}")
