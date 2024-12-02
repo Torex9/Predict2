@@ -282,7 +282,7 @@ def main(context):
 
 
             # Update the document based on the prediction
-            updated_status = "cancelled" if prediction == 1 else "scheduled"
+            updated_status = "cancelled" if prediction == 0 else "scheduled"
             update_payload = {"status": updated_status}
 
             context.log(f"Latest prediction: {prediction}")
