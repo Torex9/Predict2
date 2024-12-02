@@ -134,7 +134,7 @@ def fetch_file_from_storage(context, storage, bucket_id, file_id, local_path):
 
 
 
-def preprocess_data(document, scaler):
+def preprocess_data(context, document, scaler):
     """
     Convert the Appwrite document to a format suitable for the ML model.
     """
@@ -206,9 +206,20 @@ def preprocess_data(document, scaler):
         features.extend([0] * len(valid_neighbourhoods))  # False for each neighbourhood
     
         
+    # # Scale features
+    # return scaler.transform([features])
+    # #return features
+
+    # Log the shape of features before scaling
+    context.log(f"Features shape before scaling: {len(features)}")
+
     # Scale features
-    return scaler.transform([features])
-    #return features
+    scaled_features = scaler.transform([features])
+    
+    # Log the shape of scaled features
+    context.log(f"Scaled features shape: {scaled_features.shape}")
+
+    return scaled_features
 
 
 
@@ -274,7 +285,7 @@ def main(context):
             context.log(f"Latest document full data: {latest_document}")
 
             # Preprocess data for prediction
-            features = preprocess_data(latest_document, scaler)
+            features = preprocess_data(context, latest_document, scaler)
 
 
             # Predict no-show
