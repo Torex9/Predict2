@@ -235,11 +235,11 @@ def main(context):
         # File IDs for scaler and model
         bucket_id = os.environ["NEXT_PUBLIC_PREDICTIONFILES"]
         scaler_file_id = os.environ["SCALER_ID"]
-        model_file_id = os.environ["LOGISTIC_REGRESSION_MODEL_ID"]
+        model_file_id = os.environ["RANDOM_FOREST_MODEL_ID"]
 
         # Temporary paths for scaler and model
         scaler_path = "/tmp/scaler.pkl"
-        model_path = "/tmp/logistic_regression_model.pkl"
+        model_path = "/tmp/random_forest_model.pkl"
 
         # Fetch scaler and model from Appwrite Storage
         fetch_file_from_storage(context, storage, bucket_id, scaler_file_id, scaler_path)
