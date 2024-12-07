@@ -169,7 +169,6 @@ def preprocess_data(document, scaler):
             int(document['alcoholism']),
             int(document['handicap']),
             int(document['smsRecieved']),
-            1 if document['gender'] == 'M' else 0,  # Male: 1, Female: 0
             ]
     
     # Extract features and transform to match model input
@@ -188,6 +187,9 @@ def preprocess_data(document, scaler):
             appointment_datetime.weekday(),   # CreatedAtDayOfWeek (0=Monday, 6=Sunday)
             appointment_datetime.hour         # CreatedAtHour (0-23)
         ])
+
+        # Append gender before neighbourhood
+        features.append(1 if document['gender'] == 'M' else 0)  # Male: 1, Female: 0
 
         # Iterate over the list of valid neighbourhoods and add a corresponding feature for each one
         for neighbourhood in valid_neighbourhoods:
