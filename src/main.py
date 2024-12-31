@@ -10,6 +10,7 @@ import smtplib
 import requests
 import logging
 from datetime import datetime
+from datetime import timedelta
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -291,6 +292,57 @@ def main(context):
             context.log(f"Latest Status After prediction: {updated_status}")
 
 
+            # Send the email after the update
+            subject = f"Appointment Status Updated: {updated_status}"
+            body = ''
+            recipient_email = os.environ["EMAIL"]
+
+            if updated_status == "cancelled":
+                # Parse the original schedule date
+                original_schedule = datetime.fromisoformat(latest_document['schedule'].replace('Z', ''))
+    
+                # Add 7 days to the schedule date
+                rescheduled_date = original_schedule + timedelta(days=7)
+                
+                # Format the rescheduled date
+                rescheduled_date_iso = rescheduled_date.isoformat() + "Z"  # Convert back to ISO format
+                rescheduled_date_str = rescheduled_date.strftime('%Y-%m-%d %H:%M:%S')
+                
+                # Update the payload with the rescheduled date
+                update_payload["schedule"] = rescheduled_date_iso
+
+                # Log the rescheduled date
+                context.log(f"Rescheduled date: {rescheduled_date_iso}")
+                body += (
+                    f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
+                    f"originally scheduled for {original_schedule.strftime('%Y-%m-%d %H:%M:%S')}, "
+                    f"has been updated to '{updated_status}' based on the prediction.\n\n"
+                    f"The appointment has been rescheduled to {rescheduled_date_str}."
+                )
+            # Check if meeting details exist and status is 'scheduled'
+            elif updated_status == 'scheduled' and meeting_details:
+                meeting_details = create_meeting(
+                context,
+                "Carepulse Zoom Meeting",
+                "60",
+                "2024-12-23",
+                "18:24",
+                )
+                
+                body += (
+                    f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
+                    f"scheduled for {datetime.fromisoformat(latest_document['schedule'].replace('Z', '')).strftime('%Y-%m-%d %H:%M:%S')}, "
+                    f"has been updated to '{updated_status}' based on the prediction."
+                    f"\n\nA Zoom meeting has been scheduled for this appointment. You can join the meeting using the following details:\n"
+                    f"Meeting Link: {meeting_details['meeting_url']}\n"
+                    f"Password: {meeting_details['password']}\n"
+                    f"Meeting Time: {meeting_details['meetingTime']}\n"
+                    f"Purpose: {meeting_details['purpose']}\n"
+                    f"Duration: {meeting_details['duration']} minutes"
+                )
+            
+
+
             # Update the document in the collection
             databases.update_document(
             database_id=os.environ["DATABASE_ID"],
@@ -300,35 +352,14 @@ def main(context):
             )
 
             
-            meeting_details = create_meeting(
-                context,
-                "Carepulse Zoom Meeting",
-                "60",
-                "2024-12-23",
-                "18:24",
-            )
+            
 
 
-            # Send the email after the update
-            subject = f"Appointment Status Updated: {updated_status}"
-            body = (
-                f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
-                f"scheduled for {datetime.fromisoformat(latest_document['schedule'].replace('Z', '')).strftime('%Y-%m-%d %H:%M:%S')}, "
-                f"has been updated to '{updated_status}' based on the prediction."
-            )
+            
 
-            # Check if meeting details exist and status is 'scheduled'
-            if updated_status == 'scheduled' and meeting_details:
-                body += (
-                    f"\n\nA Zoom meeting has been scheduled for this appointment. You can join the meeting using the following details:\n"
-                    f"Meeting Link: {meeting_details['meeting_url']}\n"
-                    f"Password: {meeting_details['password']}\n"
-                    f"Meeting Time: {meeting_details['meetingTime']}\n"
-                    f"Purpose: {meeting_details['purpose']}\n"
-                    f"Duration: {meeting_details['duration']} minutes"
-                )
+            
 
-            recipient_email = os.environ["EMAIL"]
+            
 
             # Send the email to the recipient
             send_email(subject, body, recipient_email)
