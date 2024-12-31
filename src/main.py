@@ -297,6 +297,14 @@ def main(context):
             body = ''
             recipient_email = os.environ["EMAIL"]
 
+            meeting_details = create_meeting(
+                context,
+                "Carepulse Zoom Meeting",
+                "60",
+                "2024-12-23",
+                "18:24",
+                )
+
             if updated_status == "cancelled":
                 # Parse the original schedule date
                 original_schedule = datetime.fromisoformat(latest_document['schedule'].replace('Z', ''))
@@ -321,14 +329,7 @@ def main(context):
                 )
             # Check if meeting details exist and status is 'scheduled'
             elif updated_status == 'scheduled' and meeting_details:
-                meeting_details = create_meeting(
-                context,
-                "Carepulse Zoom Meeting",
-                "60",
-                "2024-12-23",
-                "18:24",
-                )
-                
+
                 body += (
                     f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
                     f"scheduled for {datetime.fromisoformat(latest_document['schedule'].replace('Z', '')).strftime('%Y-%m-%d %H:%M:%S')}, "
