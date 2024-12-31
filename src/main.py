@@ -342,9 +342,6 @@ def main(context):
                 # Log the rescheduled date
                 context.log(f"Rescheduled date: {rescheduled_date_iso}")
                 body += (
-                    f"The status of the appointment with Dr. {latest_document['primaryPhysician']}, "
-                    f"originally scheduled for {original_schedule.strftime('%Y-%m-%d %H:%M:%S')}, "
-                    f"has been updated to '{updated_status}' based on the prediction.\n\n"
                     f"\n\nThe appointment has been rescheduled to {rescheduled_date_str}."
                     f"A Zoom meeting for the original schedule has been created. Details:\n"
                     f"Meeting Link: {original_meeting_details['meeting_url']}\n"
