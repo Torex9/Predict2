@@ -343,12 +343,12 @@ def main(context):
                 context.log(f"Rescheduled date: {rescheduled_date_iso}")
                 body += (
                     f"\n\nThe appointment has been rescheduled to {rescheduled_date_str}."
-                    f"A Zoom meeting for the original schedule has been created. Details:\n"
-                    f"Meeting Link: {original_meeting_details['meeting_url']}\n"
-                    f"Password: {original_meeting_details['password']}\n"
-                    f"Meeting Time: {original_meeting_details['meetingTime']}\n"
-                    f"Purpose: {original_meeting_details['purpose']}\n"
-                    f"Duration: {original_meeting_details['duration']} minutes\n\n"
+                    f"A Zoom meeting for the rescheduled date has been created. Details:\n"
+                    f"Meeting Link: {rescheduled_meeting_details['meeting_url']}\n"
+                    f"Password: {rescheduled_meeting_details['password']}\n"
+                    f"Meeting Time: {rescheduled_meeting_details['meetingTime']}\n"
+                    f"Purpose: {rescheduled_meeting_details['purpose']}\n"
+                    f"Duration: {rescheduled_meeting_details['duration']} minutes\n"
                     
                 )
             # Check if meeting details exist and status is 'scheduled'
